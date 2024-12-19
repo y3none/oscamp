@@ -54,8 +54,7 @@ members = [
     "exercises/alt_alloc",
     "exercises/sys_map",
     "exercises/simple_hv",
-
-    "examples/shell",
+    "exercises/ramfs_rename",
 ]
 
 [workspace.package]
