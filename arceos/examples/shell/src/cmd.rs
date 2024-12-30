@@ -27,6 +27,8 @@ const CMD_TABLE: &[(&str, CmdHandler)] = &[
     ("pwd", do_pwd),
     ("rm", do_rm),
     ("uname", do_uname),
+    ("rename", do_rename),
+    ("mv", do_mv),
 ];
 
 fn file_type_to_char(ty: FileType) -> char {
@@ -258,6 +260,33 @@ fn do_uname(_args: &str) {
         arch = arch,
         plat = platform,
     );
+}
+
+fn do_rename(_args: &str) {
+    let (old_name, new_name) = split_whitespace(_args);
+    if old_name.is_empty() || new_name.is_empty() {
+        print_err!("rename", "both old and new file names must be provided");
+        return;
+    }
+    if let Err(e) = fs::rename(old_name, new_name) {
+        print_err!("rename", format_args!("failed to rename '{old_name}' to '{new_name}'"), e);
+    }
+}
+
+fn do_mv(_args: &str) {
+    let (source, destination) = split_whitespace(_args);
+    if source.is_empty() || destination.is_empty() {
+        print_err!("mv", "both source and destination must be provided");
+        return;
+    }
+    // let new_destination = String::from(destination) + "/" + source;
+    // if let Err(e) = fs::create_dir(destination) {
+    //     print_err!("create_dir", format_args!("failed to create dir '{destination}'"), e);
+    // }
+    let new_destination = String::from(destination.trim_start_matches("./")) + "/" + source;
+    if let Err(e) = fs::rename(source, &new_destination) {
+        print_err!("mv", format_args!("failed to move '{source}' to '{new_destination}'"), e);
+    }
 }
 
 fn do_help(_args: &str) {

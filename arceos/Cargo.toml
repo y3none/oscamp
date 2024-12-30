@@ -56,6 +56,7 @@ members = [
     "exercises/simple_hv",
 
     "examples/shell",
+    "examples/helloworld",
 ]
 
 [workspace.package]

@@ -22,6 +22,8 @@ use alloc::string::String;
 use alloc::collections::BTreeMap;
 use axmm::AddrSpace;
 use loader::load_user_app;
+use axtask::TaskExtRef;
+use axhal::trap::{register_trap_handler, PAGE_FAULT};
 
 const USER_STACK_SIZE: usize = 0x10000;
 const KERNEL_STACK_SIZE: usize = 0x40000; // 256 KiB
@@ -79,4 +81,21 @@ fn init_user_stack(uspace: &mut AddrSpace, populating: bool) -> io::Result<VirtA
     uspace.write(VirtAddr::from_usize(ustack_pointer), stack_data.as_slice())?;
 
     Ok(ustack_pointer.into())
+}
+
+#[register_trap_handler(PAGE_FAULT)]
+fn handle_page_fault(va: VirtAddr, map_flags: MappingFlags, umode: bool) -> bool{
+    if umode == true {
+        let cur = axtask::current();
+        if cur.task_ext().aspace.lock().handle_page_fault(va, map_flags)
+        {
+            ax_println!("{}: handle_page_fault done", cur.id_name());
+            true
+        } else {
+            ax_println!("{}: handle_page_fault failed", cur.id_name());
+            axtask::exit(-1);
+        }
+    } else {
+        false
+    }
 }

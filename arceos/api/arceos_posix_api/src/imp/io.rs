@@ -13,9 +13,10 @@ use axio::prelude::*;
 pub fn sys_read(fd: c_int, buf: *mut c_void, count: usize) -> ctypes::ssize_t {
     debug!("sys_read <= {} {:#x} {}", fd, buf as usize, count);
     syscall_body!(sys_read, {
-        if buf.is_null() {
-            return Err(LinuxError::EFAULT);
-        }
+        // YYY:奇怪的点：为什么判断buf？
+        // if buf.is_null() {
+        //     return Err(LinuxError::EFAULT);
+        // }
         let dst = unsafe { core::slice::from_raw_parts_mut(buf as *mut u8, count) };
         #[cfg(feature = "fd")]
         {
